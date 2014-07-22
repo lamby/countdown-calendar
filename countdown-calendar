@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 """
 Countdown Calendar -- Generates a PDF countdown calendar to/from any date
