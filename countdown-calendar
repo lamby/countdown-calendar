@@ -1,0 +1,106 @@
+#!/usr/bin/python
+
+"""
+Countdown Calendar -- Generates a PDF countdown calendar to/from any date
+Copyright (C) 2014 Chris Lamb <chris@chris-lamb.co.uk>
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGE.
+"""
+
+import sys
+import datetime
+import optparse
+
+from reportlab.lib.pagesizes import A4 as PAGESIZE
+from reportlab.pdfgen.canvas import Canvas
+
+import locale
+locale.setlocale(locale.LC_ALL, '')
+
+def main():
+    usage = """ %prog [options] <to> [<from>]
+
+    Generates a simple PDF countdown calendar for the specified dates.
+    """.rstrip()
+
+    parser = optparse.OptionParser(usage=usage)
+    parser.add_option('-o', '--output', dest='output', help='Output file (Default: calendar.pdf)',
+        metavar='FILE', default='calendar.pdf')
+    parser.add_option('-q', '--quiet', dest='verbose', default=True,
+        action='store_false', help="Don't print status messages to STDERR")
+
+    options, args = parser.parse_args()
+
+    if not args or len(args) > 2:
+        parser.error("Invalid arguments.")
+
+    def parse_date(val):
+        return datetime.date(*[int(x) for x in args[0].split('-', 2)])
+
+    options.to_date = parse_date(args[0])
+    options.from_date = datetime.date.today()
+
+    if len(args) == 2:
+        options.from_date = parse_date(args[1])
+
+    if options.from_date > options.to_date:
+        parser.error("'from' date is greater than 'to' date")
+
+    return generate_calendar(options)
+
+def generate_calendar(options):
+    pdf = Canvas(options.output, pagesize=PAGESIZE)
+    pdf.setStrokeColorRGB(1, 0, 0)
+
+    timedelta = options.to_date - options.from_date
+
+    def log(txt, *args):
+        if options.verbose:
+            print >>sys.stderr, txt % args
+
+    for x in range(timedelta.days):
+        days_left = timedelta.days - x
+        days = "day" if days_left == 1 else "days"
+
+        log("Generating page %d (%d %s left)", x + 1, days_left, days)
+
+        pdf.setFont('Helvetica', 240)
+        pdf.drawCentredString(
+            PAGESIZE[0] / 2,
+            (PAGESIZE[1] / 2) - 50,
+            "%s" % days_left,
+        )
+
+        pdf.setFont('Helvetica', 36)
+        pdf.drawCentredString(
+            PAGESIZE[0] / 2,
+            (PAGESIZE[1] / 2) - 120,
+            "%s remaining" % days,
+        )
+
+        pdf.showPage()
+
+    log("Saving PDF to %s", options.output)
+    pdf.save()
+
+if __name__ == '__main__':
+    sys.exit(main())
