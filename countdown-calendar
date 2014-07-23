@@ -27,6 +27,7 @@ SUCH DAMAGE.
 """
 
 import sys
+import logging
 import datetime
 import optparse
 
@@ -35,6 +36,8 @@ from reportlab.pdfgen.canvas import Canvas
 
 import locale
 locale.setlocale(locale.LC_ALL, '')
+
+log = logging.getLogger()
 
 def main():
     usage = """ %prog [options] <to> [<from>]
@@ -49,6 +52,11 @@ def main():
         action='store_false', help="Don't print status messages to STDERR")
 
     options, args = parser.parse_args()
+
+    logging.basicConfig(
+        level=logging.INFO if options.verbose else None,
+        format='%(levelname).1s: %(message)s',
+    )
 
     if not args or len(args) > 2:
         parser.error("Invalid arguments.")
@@ -73,15 +81,14 @@ def generate_calendar(options):
 
     timedelta = options.to_date - options.from_date
 
-    def log(txt, *args):
-        if options.verbose:
-            print >>sys.stderr, txt % args
-
     for x in range(timedelta.days):
         days_left = timedelta.days - x
         days = "day" if days_left == 1 else "days"
 
-        log("Generating page %d (%d %s left)", x + 1, days_left, days)
+        log.info(
+            "Generating page %(number)d (%(days_left)d %(days)s left)",
+            page,
+        )
 
         pdf.setFont('Helvetica', 240)
         pdf.drawCentredString(
@@ -99,7 +106,7 @@ def generate_calendar(options):
 
         pdf.showPage()
 
-    log("Saving PDF to %s", options.output)
+    log.info("Saving PDF to %s", options.output)
     pdf.save()
 
 if __name__ == '__main__':
