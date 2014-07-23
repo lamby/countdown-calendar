@@ -43,6 +43,10 @@ def main():
     usage = """ %prog [options] [<from>] <to>
 
     Generates a simple PDF countdown calendar for the specified dates.
+
+    Example:
+
+        # %prog 2014-9-12 2014-10-18
     """.rstrip()
 
     parser = optparse.OptionParser(usage=usage)
