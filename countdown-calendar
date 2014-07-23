@@ -114,6 +114,13 @@ def generate_calendar(options):
             "%(days)s remaining" % page,
         )
 
+        pdf.setFont('Helvetica', 18)
+        pdf.drawCentredString(
+            PAGESIZE[0] / 2,
+            80,
+            page['date'].strftime("%a %B %d %Y"),
+        )
+
         pdf.showPage()
 
     log.info("Saving PDF to %s", options.output)
