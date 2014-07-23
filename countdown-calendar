@@ -40,7 +40,7 @@ locale.setlocale(locale.LC_ALL, '')
 log = logging.getLogger()
 
 def main():
-    usage = """ %prog [options] <to> [<from>]
+    usage = """ %prog [options] [<from>] <to>
 
     Generates a simple PDF countdown calendar for the specified dates.
     """.rstrip()
@@ -68,7 +68,7 @@ def main():
     options.from_date = datetime.date.today()
 
     if len(args) == 2:
-        options.from_date = parse_date(args[1])
+        options.to_date, options.from_date = parse_date(args[1]), options.to_date
 
     if options.from_date > options.to_date:
         parser.error("'from' date is greater than 'to' date")
