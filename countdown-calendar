@@ -103,7 +103,7 @@ def generate_calendar(options):
         pdf.setFont('Helvetica', 240)
         pdf.drawCentredString(
             PAGESIZE[0] / 2,
-            (PAGESIZE[1] / 2) - 50,
+            (PAGESIZE[1] / 2) - 40,
             "%(days_left)d" % page,
         )
 
