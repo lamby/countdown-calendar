@@ -76,17 +76,20 @@ def main():
     return generate_calendar(options)
 
 def generate_pages(options):
-    timedelta = options.to_date - options.from_date
+    idx = 1
+    date = options.to_date
+    result = []
 
-    for x in range(timedelta.days):
-        days_left = timedelta.days - x
-        days = "day" if days_left == 1 else "days"
+    while date != options.from_date:
+        result.insert(0, {
+            'days': "day" if idx == 1 else "days",
+            'days_left': idx,
+        })
 
-        yield {
-            'days': days,
-            'number': x + 1,
-            'days_left': days_left,
-        }
+        idx += 1
+        date -= datetime.timedelta(days=1)
+
+    return result
 
 def generate_calendar(options):
     pdf = Canvas(options.output, pagesize=PAGESIZE)
